@@ -17,6 +17,7 @@ public class VRPlayer : MonoBehaviour
 	public float snapDegree;
 
 	public float[] gripValues = new float[2] { 0, 0 };
+	public float[] triggerValues = new float[2] { 0, 0 };
 	public Vector2[] joyValues = new Vector2[2];
 	
 	public GRIP_STATE[] gripStates = new GRIP_STATE[2] { GRIP_STATE.OPEN, GRIP_STATE.OPEN };
@@ -67,14 +68,14 @@ public class VRPlayer : MonoBehaviour
     {
 	    if (teleportStates[handIndex] == TELEPORT_STATE.WAITING) //not currently teleporting
 	    {
-		    if (joyValues[handIndex].y > teleportThresholdActivate)
+		    if (triggerValues[handIndex] > teleportThresholdActivate)
 		    {
 			    teleportStates[handIndex] = TELEPORT_STATE.ACTIVE;
 		    }
 	    }
 	    else if (teleportStates[handIndex] == TELEPORT_STATE.ACTIVE) //in the process of teleporting
 	    {
-		    if (joyValues[handIndex].y < teleportThresholdDeactivate) //when the player releases joystick
+		    if (triggerValues[handIndex] < teleportThresholdDeactivate) //when the player releases joystick
 		    {
 			    if (teleporterValid[handIndex])
                 {
@@ -219,6 +220,12 @@ public class VRPlayer : MonoBehaviour
 		    }
 	    }
     }
+
+    /*void linearMovement()
+    {
+	    Vector3 movementDir = new Vector3(joyValues[0].x, 0, joyValues[0].y);
+	    transform.position += Vector3.ProjectOnPlane(Time.deltaTime * movementDir * 2.0f, Vector3.up);
+    }*/
     
 
     // Update is called once per frame
@@ -230,6 +237,9 @@ public class VRPlayer : MonoBehaviour
         //get values for controller joysticks
         joyValues[0] = OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick);
         joyValues[1] = OVRInput.Get(OVRInput.Axis2D.SecondaryThumbstick);
+        //get values for controller triggers
+        triggerValues[0] = OVRInput.Get(OVRInput.Axis1D.PrimaryIndexTrigger);
+        triggerValues[1] = OVRInput.Get(OVRInput.Axis1D.SecondaryIndexTrigger);
 
         
         for(int i = 0; i < 2; i++)
@@ -244,6 +254,8 @@ public class VRPlayer : MonoBehaviour
 			grabbing(i);
 			snapTurn(i);
 		}
+        
+        //linearMovement();
 
         //move player based on grip states
         if (gripStates[0] == GRIP_STATE.AIR && gripStates[1] == GRIP_STATE.AIR) //both controllers
